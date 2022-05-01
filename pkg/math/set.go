@@ -4,7 +4,7 @@ import "reflect"
 
 type Equal func(i1 interface{}, i2 interface{}) bool
 
-func Intersect(slices1 interface{}, slices2 interface{}, efunc Equal) (set []interface{}) {
+func Intersect[T comparable](slices1 interface{}, slices2 interface{}, efunc Equal) (set []interface{}) {
 	av := reflect.ValueOf(slices1)
 
 	for i := 0; i < av.Len(); i++ {

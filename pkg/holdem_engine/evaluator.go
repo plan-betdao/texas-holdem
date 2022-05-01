@@ -57,9 +57,17 @@ var royal_flush = [4][5][2]byte{
 	{{'c', 'a'}, {'c', 'k'}, {'c', 'q'}, {'c', 'j'}, {'c', 't'}},
 }
 
+func GetValues(category string, picks [5][2]byte) (values [6]int) {
+	values[0] = category_order[category]
+	for index, v := range picks {
+		values[index+1] = kind_order[v[1]]
+	}
+	return
+}
+
 func EvaluateCards(cards [7][2]byte) (result EvaluateResult) {
 	for _, v := range royal_flush {
-		math.Intersect(cards, v, func(i1 interface{}, i2 interface{}) bool {
+		set := math.Intersect(cards, v, func(i1 interface{}, i2 interface{}) bool {
 			i1s2, ok := i1.([2]byte)
 			if !ok {
 				return false
@@ -74,8 +82,14 @@ func EvaluateCards(cards [7][2]byte) (result EvaluateResult) {
 				return true
 			}
 
-			return true
+			return false
 		})
+		if len(set) == 5 {
+			result.category = "royal-flush"
+			// a := (*[5]interface{})(set)
+			// result.picks =
+			result.value = GetValues(result.category, result.picks)
+		}
 	}
 	return
 }

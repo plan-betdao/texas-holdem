@@ -53,6 +53,8 @@ func GetSortedCards(cards [7][2]byte) {
 func GetFlushSuitCards(cards [7][2]byte) (picks [][2]byte) {
 	groups := math.GroupBy(cards[:7], func(t1 [2]byte, t2 [2]byte) bool {
 		return t1[suit] < t2[suit]
+	}, func(t1 [2]byte) byte {
+		return t1[suit]
 	})
 
 	for _, g := range groups {
@@ -78,14 +80,25 @@ func init() {
 }
 
 func ListStraights(cards [7][2]byte) (picks [5][2]byte) {
-	// order_cards := math.GroupBy(cards[:7], func(t1 [2]byte, t2 [2]byte) bool {
-	// 	return kind_order[t1[kind]] < kind_order[t2[kind]]
-	// })
+	order_cards := math.GroupBy(cards[:7], func(t1 [2]byte, t2 [2]byte) bool {
+		return kind_order[t1[kind]] < kind_order[t2[kind]]
+	}, func(t1 [2]byte) int {
+		return kind_order[t1[kind]]
+	})
 
-	// for _, s := range g_possiable_straights {
-	// 	// order_cards[s[0]]
-	// }
-	// return
+	for _, s := range g_possiable_straights {
+		has := [][2]byte{}
+		for _, v := range s {
+			if _, ok := order_cards[v]; !ok {
+				break
+			}
+			has = append(has, order_cards[v]...)
+		}
+		if len(has) == 5 {
+			return *(*[5][2]byte)(has)
+		}
+	}
+	return
 }
 
 var royal_flush = [4][5][2]byte{
@@ -113,6 +126,7 @@ func EvaluateCards(cards [7][2]byte) (result EvaluateResult) {
 			result.category = "royal_flush"
 			result.picks = *(*[5][2]byte)(set)
 			result.value = GetValues(result.category, result.picks)
+			return
 		}
 	}
 
@@ -121,6 +135,7 @@ func EvaluateCards(cards [7][2]byte) (result EvaluateResult) {
 		result.category = "straight_flush"
 		result.picks = *(*[5][2]byte)(set)
 		result.value = GetValues(result.category, result.picks)
+		return
 	}
 
 	return

@@ -22,6 +22,7 @@ func Contains[T comparable](a []T, e T) bool {
 }
 
 type UserLess[T comparable] func(t1 T, t2 T) bool
+type MapKey[T comparable, TT comparable] func(t1 T) TT
 
 type SortByT[T comparable] struct {
 	data []T
@@ -36,7 +37,8 @@ func Sort[T comparable](slices []T, less UserLess[T]) {
 	sort.Sort(SortByT[T]{slices, less})
 }
 
-func GroupBy[T comparable](slices []T, less UserLess[T]) (groups [][]T) {
+func GroupBy[T comparable, TT comparable](slices []T, less UserLess[T], mapkey MapKey[T, TT]) (groups map[TT][]T) {
+	groups = make(map[TT][]T)
 	Sort(slices, less)
 
 	i := 0
@@ -48,7 +50,8 @@ func GroupBy[T comparable](slices []T, less UserLess[T]) (groups [][]T) {
 		for j = j + 1; j < len(slices) && !less(slices[i], slices[j]); j++ {
 
 		}
-		groups = append(groups, slices[i:j])
+		// groups = append(groups, slices[i:j])
+		groups[mapkey(slices[i])] = slices[i:j]
 		i = j
 	}
 

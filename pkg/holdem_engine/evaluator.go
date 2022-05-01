@@ -1,8 +1,12 @@
 package holdem_engine
 
 import (
-	"bytes"
 	"texas-holdem/pkg/math"
+)
+
+const (
+	suit = 0
+	kind = 1
 )
 
 var kind_order = map[byte]int{
@@ -21,14 +25,14 @@ var kind_order = map[byte]int{
 	'a': 14}
 
 var category_order = map[string]int{
-	"royal-flush":     9,
-	"straight-flush":  8,
-	"four-of-a-kind":  7,
-	"full-house":      6,
+	"royal_flush":     9,
+	"straight_flush":  8,
+	"four_of_a_kind":  7,
+	"full_house":      6,
 	"flush":           5,
 	"straight":        4,
-	"three-of-a-kind": 3,
-	"two-pairs":       2,
+	"three_of_a_kind": 3,
+	"two_pairs":       2,
 	"pair":            1,
 	"highcard":        0}
 
@@ -46,8 +50,42 @@ func GetSortedCards(cards [7][2]byte) {
 
 }
 
-func GetFlushSuitCards(cards [7][2]byte) {
+func GetFlushSuitCards(cards [7][2]byte) (picks [][2]byte) {
+	groups := math.GroupBy(cards[:7], func(t1 [2]byte, t2 [2]byte) bool {
+		return t1[suit] < t2[suit]
+	})
 
+	for _, g := range groups {
+		if len(g) >= 5 {
+			math.Sort(g, func(t1 [2]byte, t2 [2]byte) bool {
+				return kind_order[t1[kind]] < kind_order[t2[kind]]
+			})
+			return g
+		}
+	}
+	return
+}
+
+var g_possiable_straights [10][5]int
+
+func init() {
+	for i := 14; i > 5; i-- {
+		for j := i; j > i-5; j-- {
+			g_possiable_straights[14-i][i-j] = j
+		}
+	}
+	g_possiable_straights[9] = [5]int{5, 4, 3, 2, 14}
+}
+
+func ListStraights(cards [7][2]byte) (picks [5][2]byte) {
+	// order_cards := math.GroupBy(cards[:7], func(t1 [2]byte, t2 [2]byte) bool {
+	// 	return kind_order[t1[kind]] < kind_order[t2[kind]]
+	// })
+
+	// for _, s := range g_possiable_straights {
+	// 	// order_cards[s[0]]
+	// }
+	// return
 }
 
 var royal_flush = [4][5][2]byte{
@@ -66,30 +104,24 @@ func GetValues(category string, picks [5][2]byte) (values [6]int) {
 }
 
 func EvaluateCards(cards [7][2]byte) (result EvaluateResult) {
+	flush_suit_cards := GetFlushSuitCards(cards)
+	straights := ListStraights(cards)
+
 	for _, v := range royal_flush {
-		set := math.Intersect(cards, v, func(i1 interface{}, i2 interface{}) bool {
-			i1s2, ok := i1.([2]byte)
-			if !ok {
-				return false
-			}
-
-			i2s2, ok := i2.([2]byte)
-			if !ok {
-				return false
-			}
-
-			if bytes.Equal(i1s2[:], i2s2[:]) {
-				return true
-			}
-
-			return false
-		})
+		set := math.Intersect(v[:5], cards[:7])
 		if len(set) == 5 {
-			result.category = "royal-flush"
-			// a := (*[5]interface{})(set)
-			// result.picks =
+			result.category = "royal_flush"
+			result.picks = *(*[5][2]byte)(set)
 			result.value = GetValues(result.category, result.picks)
 		}
 	}
+
+	set := math.Intersect(straights[:5], flush_suit_cards)
+	if len(set) == 5 {
+		result.category = "straight_flush"
+		result.picks = *(*[5][2]byte)(set)
+		result.value = GetValues(result.category, result.picks)
+	}
+
 	return
 }

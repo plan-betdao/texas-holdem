@@ -1,6 +1,8 @@
 package holdem_engine
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestEvaluateCards(t *testing.T) {
 

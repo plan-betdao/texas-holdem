@@ -30,8 +30,8 @@ func TestEvaluateCards(t *testing.T) {
 			picks:    [5][2]byte{{'s', 'k'}, {'s', 'q'}, {'s', 'j'}, {'s', 't'}, {'s', '9'}}},
 		{
 			category: "four_of_a_kind",
-			value:    [6]int{7, 10, 10, 10, 10, 5},
-			picks:    [5][2]byte{{'s', 't'}, {'d', 't'}, {'h', 't'}, {'c', 't'}, {'s', '5'}}},
+			value:    [6]int{7, 10, 10, 10, 10, 12},
+			picks:    [5][2]byte{{'s', 't'}, {'d', 't'}, {'h', 't'}, {'c', 't'}, {'s', 'q'}}},
 		{
 			category: "full_house",
 			value:    [6]int{6, 3, 3, 3, 2, 2},
